@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TCPServer {
 
@@ -23,10 +25,16 @@ public class TCPServer {
     private static final String ACK_RESEND = "ACK_RESEND";
     private static final String ERROR = "ERROR";
 
+    // We'll use this map to keep track of each transaction, mapping the transaction ID to the transaction
+    // Since WRITE & COMMIT messages contain the transaction id, this will let us query for the correct transaction
+    // just based on that ID
+    private Map<Integer, Transaction> transactions;
+
     private ServerSocket serverSocket;
 
     public TCPServer(int port) throws IOException {
         serverSocket = new ServerSocket(port);
+        transactions = new HashMap<>();
     }
 
     public void run() throws IOException {

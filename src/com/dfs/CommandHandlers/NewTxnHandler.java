@@ -25,6 +25,10 @@ public class NewTxnHandler implements CommandHandler {
         this.reader = reader;
     }
 
+    public int getTransactionId() {
+        return transactionId;
+    }
+
     public String getResponse() {
         return  "NEW_TXN message received.\ntransaction ID = " + transactionId + "\nsequence number = " + seqNumber +
                 "\ncontent length = " + contentLength + "\nfilename = " + filename + "\n";
