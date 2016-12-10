@@ -17,13 +17,21 @@ public class NewTxnHandler implements CommandHandler {
     private int contentLength;
     private String filename;
 
-    private String command;
-    private BufferedReader reader;
+    private byte[] data;
+    private String[] command;
 
-    public NewTxnHandler(String command, BufferedReader reader) {
+    public NewTxnHandler(String[] command, byte[] data) {
         this.command = command;
-        this.reader = reader;
+        this.data = data;
     }
+
+//    private String command;
+//    private BufferedReader reader;
+
+//    public NewTxnHandler(String command, BufferedReader reader) {
+//        this.command = command;
+//        this.reader = reader;
+//    }
 
     public int getTransactionId() {
         return transactionId;
@@ -35,21 +43,43 @@ public class NewTxnHandler implements CommandHandler {
     }
 
     public void parseCommand() throws DfsServerException {
-        String[] parts;
-        parts = command.split(" ");
-        if(parts.length < MESSAGE_PARTS) {
-            throw new DfsServerException(ERROR_204);
-        }
-        transactionId = Integer.parseInt(parts[1]);
-        seqNumber = Integer.parseInt(parts[2]);
-        contentLength = Integer.parseInt(parts[3]);
+        transactionId = Integer.parseInt(command[1]);
+        seqNumber = Integer.parseInt(command[2]);
+        contentLength = Integer.parseInt(command[3]);
         if(seqNumber != 0) {
             throw new DfsServerException(ERROR_202);
         }
     }
 
-    public void parseFileName() throws IOException {
-        reader.readLine(); // consume new line in header
-        filename = reader.readLine();
+    public void parseFileName() {
+        byte[] filenameData = new byte[data.length];
+        int j = 0;
+        for (byte b : data) {
+            if (b > 32 && b < 127) {
+                filenameData[j] = b;
+                j++;
+            }
+        }
+        filename = new String(filenameData, 0, j);
+        System.out.println(filename);
     }
+
+//    public void parseCommand() throws DfsServerException {
+//        String[] parts;
+//        parts = command.split(" ");
+//        if(parts.length < MESSAGE_PARTS) {
+//            throw new DfsServerException(ERROR_204);
+//        }
+//        transactionId = Integer.parseInt(parts[1]);
+//        seqNumber = Integer.parseInt(parts[2]);
+//        contentLength = Integer.parseInt(parts[3]);
+//        if(seqNumber != 0) {
+//            throw new DfsServerException(ERROR_202);
+//        }
+//    }
+
+//    public void parseFileName() throws IOException {
+//        reader.readLine(); // consume new line in header
+//        filename = reader.readLine();
+//    }
 }

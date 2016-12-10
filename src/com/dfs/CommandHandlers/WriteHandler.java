@@ -2,8 +2,10 @@ package com.dfs.CommandHandlers;
 
 import com.dfs.DfsServerException;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.ArrayList;
 
 import static com.dfs.Constants.ERROR_204;
@@ -17,14 +19,18 @@ public class WriteHandler implements CommandHandler {
 
     private String command;
     private BufferedReader reader;
+    private BufferedInputStream in;
 
-    private ArrayList<String> fileData;
+    private byte[] fileData;
 
-    public WriteHandler(String command, BufferedReader reader) {
+    public WriteHandler(String command, BufferedReader reader, BufferedInputStream in) {
         this.command = command;
         this.reader = reader;
-        fileData = new ArrayList<>();
+        this.in = in;
+        fileData = new byte[1024];
     }
+
+
 
     public String getResponse() {
         return "WRITE message received.\ntransaction ID = " + transactionId + "\nsequence number = " + seqNumber +
@@ -43,11 +49,21 @@ public class WriteHandler implements CommandHandler {
     }
 
     public void parseData() throws IOException {
-        reader.readLine(); // consume new line in header
-        String data = reader.readLine();
-        while(data != null) {
-            fileData.add(data);
-            data =reader.readLine();
+//        reader.readLine(); // consume new line in header
+        byte[] b = new byte[1024];
+        int bytesRead = in.read(b, 0, 1024);
+        System.out.println("bytes read = " + bytesRead);
+        while(bytesRead > 0) {
+            bytesRead = in.read(fileData, 0, 1024);
+            System.out.println("bytes read = " + bytesRead);
         }
+        System.out.println(new String(fileData));
+//        String data = reader.readLine();
+//        while(data != null) {
+//            fileData.add(data);
+//            System.out.println(data);
+//            data = reader.readLine();
+//
+//        }
     }
 }
