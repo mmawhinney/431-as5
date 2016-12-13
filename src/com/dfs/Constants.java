@@ -10,4 +10,13 @@ public class Constants {
     public static final String ERROR_205 = "File I/O failure";
     public static final String ERROR_206 = "File not found";
 
+    public static final String READ = "READ";
+    public static final String NEW_TXN = "NEW_TXN";
+    public static final String WRITE = "WRITE";
+    public static final String COMMIT = "COMMIT";
+    public static final String ABORT = "ABORT";
+    public static final String ACK = "ACK";
+    public static final String ACK_RESEND = "ACK_RESEND";
+    public static final String ERROR = "ERROR";
+
 }
