@@ -2,6 +2,7 @@ package com.dfs.CommandHandlers;
 
 
 import com.dfs.DfsServerException;
+import com.dfs.Transaction;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,10 +20,12 @@ public class NewTxnHandler implements CommandHandler {
 
     private byte[] data;
     private String[] command;
+    private Transaction transaction;
 
-    public NewTxnHandler(String[] command, byte[] data) {
+    public NewTxnHandler(String[] command, byte[] data, Transaction transaction) {
         this.command = command;
         this.data = data;
+        this.transaction = transaction;
     }
 
 //    private String command;
@@ -38,8 +41,7 @@ public class NewTxnHandler implements CommandHandler {
     }
 
     public String getResponse() {
-        return  "NEW_TXN message received.\ntransaction ID = " + transactionId + "\nsequence number = " + seqNumber +
-                "\ncontent length = " + contentLength + "\nfilename = " + filename + "\n";
+        return  "ACK " + transactionId + " " + seqNumber + "\n";
     }
 
     public void parseCommand() throws DfsServerException {
@@ -61,6 +63,7 @@ public class NewTxnHandler implements CommandHandler {
             }
         }
         filename = new String(filenameData, 0, j);
+        transaction.setFileName(filename);
         System.out.println(filename);
     }
 
