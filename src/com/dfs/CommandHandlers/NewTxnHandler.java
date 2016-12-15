@@ -13,7 +13,6 @@ public class NewTxnHandler implements CommandHandler {
     private int transactionId;
     private int seqNumber;
     private int contentLength;
-    private String filename;
 
     private byte[] data;
     private String[] command;
@@ -60,7 +59,7 @@ public class NewTxnHandler implements CommandHandler {
                 j++;
             }
         }
-        filename = new String(filenameData, 0, j);
+        String filename = new String(filenameData, 0, j);
         transaction.setFileName(filename);
         System.out.println(filename);
     }

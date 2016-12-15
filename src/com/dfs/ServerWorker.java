@@ -114,7 +114,8 @@ public class ServerWorker implements Runnable {
         System.out.println(commandType);
 
         if (commandType.contains(READ)) {
-            return "Read received";
+            ReadHandler reader = new ReadHandler(data, directory);
+            return reader.handleCommand();
         } else if (commandType.contains(NEW_TXN)) {
             TCPServer.incrementTransactionCount();
             transaction = new Transaction(messageParts, TCPServer.getTransactionCount());
