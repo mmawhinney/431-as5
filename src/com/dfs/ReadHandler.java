@@ -1,4 +1,4 @@
-package com.dfs.CommandHandlers;
+package com.dfs;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

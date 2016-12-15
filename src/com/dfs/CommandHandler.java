@@ -1,4 +1,4 @@
-package com.dfs.CommandHandlers;
+package com.dfs;
 
 import com.dfs.DfsServerException;
 
