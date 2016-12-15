@@ -18,6 +18,7 @@ public class Transaction {
     private int currentSeqNum;
     private String fileName;
     private ByteArrayOutputStream byteStream;
+    private long time;
 
     private int writeCount;
     private byte[] data;
@@ -44,6 +45,7 @@ public class Transaction {
         } else {
             status = Constants.TXN_STATE.NEW;
         }
+        time = in.getLong("time");
     }
 
     public Transaction(String[] command) {
@@ -53,6 +55,7 @@ public class Transaction {
         writeMessages = new TreeMap<>();
         writeCount = 1;
         status = Constants.TXN_STATE.NEW;
+        time = System.currentTimeMillis();
     }
 
     public Transaction(String[] command, int id) {
@@ -62,6 +65,7 @@ public class Transaction {
         writeMessages = new TreeMap<>();
         writeCount = 1;
         status = Constants.TXN_STATE.NEW;
+        time = System.currentTimeMillis();
     }
 
     public void addToWriteMessages(Integer seqNum, byte[] data) throws DfsServerException {
@@ -156,5 +160,13 @@ public class Transaction {
             }
         }
         return -1;
+    }
+
+    public long getTime() {
+        return time;
+    }
+
+    public void setTime(long time) {
+        this.time = time;
     }
 }

@@ -61,13 +61,21 @@ public class Monitor {
                 collect.add(makeTxnFromJson(tmp));
             }
             HashMap<Integer, Transaction> out = new HashMap<>();
-            collect.forEach((transaction) -> out.put(transaction.getId(), transaction));
+            collect.forEach((transaction) -> {
+                // Drops txns older than 5 min
+                long life = System.currentTimeMillis() - transaction.getTime();
+                if (life <= Constants.TIMEOUT) {
+                    out.put(transaction.getId(), transaction);
+                }
+            });
+
+            // checks for incomplete txn
             List<Transaction> collect1 = out.values()
                     .stream()
                     .filter(transaction -> transaction.getStatus() != Constants.TXN_STATE.COMPLETE)
                     .collect(Collectors.toList());
 
-            if(collect1.size() > 1){
+            if (collect1.size() > 1) {
                 return out;
             } else {
                 return new HashMap<>();
@@ -123,6 +131,7 @@ public class Monitor {
         temp.put("status", txn.getStatus().toString());
         temp.put("file", txn.getFileName());
         temp.put("write", txn.getWriteCount());
+        temp.put("time", txn.getTime());
         return temp;
     }
 
