@@ -26,7 +26,7 @@ public class Monitor {
                 .collect(Collectors.toCollection(ArrayList::new));
         JSONArray arr = new JSONArray(collect);
         try {
-            PrintWriter log = new PrintWriter(directory + ".transactions", "UTF-8");
+            PrintWriter log = new PrintWriter(directory + Constants.TXN_FILE, "UTF-8");
             log.println(arr.toString());
             log.close();
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
@@ -37,7 +37,7 @@ public class Monitor {
 
     private static void logCommands(ArrayList<String> commands, String directory) {
         try {
-            PrintWriter log = new PrintWriter(directory + ".cmdlog", "UTF-8");
+            PrintWriter log = new PrintWriter(directory + Constants.CMD_FILE, "UTF-8");
             log.println(commands.toString());
             log.close();
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
@@ -69,6 +69,24 @@ public class Monitor {
         } catch (IOException e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public static void bootCheck(String directory) {
+        try {
+            File cmds = new File(directory + Constants.CMD_FILE);
+            File txns = new File(directory + Constants.TXN_FILE);
+            BufferedReader reader = new BufferedReader(new FileReader(cmds));
+            BufferedReader reader1 = new BufferedReader(new FileReader(txns));
+            String temp;
+            while ((temp = reader.readLine()) != null) {
+                System.out.println(temp);
+            }
+            while ((temp = reader1.readLine()) != null) {
+                System.out.println(temp);
+            }
+        } catch (Exception e) {
+            System.out.println("No log file found, clean boot?");
         }
     }
 

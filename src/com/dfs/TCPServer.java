@@ -35,6 +35,7 @@ public class TCPServer {
         transactions = new HashMap<>();
         commandLog = new ArrayList<>();
         this.directory = directory;
+        Monitor.bootCheck(directory);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             Monitor.doExit(transactions, commandLog, directory);
         }));
