@@ -213,10 +213,10 @@ def readTest():
 
 def basicTests(startSequence=1,commitOffset=0):
 	print "testing with startSequence,", startSequence, "and commit offset:", commitOffset
-#	commonCaseTest(startSequence, commitOffset)
-#	writeMultipleMessages(startSequence, commitOffset)
-#	abortedTransactionsTest(startSequence, commitOffset)
-#	omissionFailure(startSequence, commitOffset)
+	commonCaseTest(startSequence, commitOffset)
+	writeMultipleMessages(startSequence, commitOffset)
+	abortedTransactionsTest(startSequence, commitOffset)
+	omissionFailure(startSequence, commitOffset)
         readTest()
 	#omissionFailureTest(startSequence, commitOffset)
 
