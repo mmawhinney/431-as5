@@ -76,15 +76,16 @@ public class Monitor {
         try {
             File cmds = new File(directory + Constants.CMD_FILE);
             File txns = new File(directory + Constants.TXN_FILE);
+            Map<Integer, Transaction> tmp = recover(txns.getCanonicalPath());
+            for(Transaction t : tmp.values()){
+                System.out.println(t.getId() + " " + t.getStatus());
+            }
             BufferedReader reader = new BufferedReader(new FileReader(cmds));
-            BufferedReader reader1 = new BufferedReader(new FileReader(txns));
             String temp;
             while ((temp = reader.readLine()) != null) {
                 System.out.println(temp);
             }
-            while ((temp = reader1.readLine()) != null) {
-                System.out.println(temp);
-            }
+
         } catch (Exception e) {
             System.out.println("No log file found, clean boot?");
         }
