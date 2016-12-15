@@ -1,5 +1,6 @@
 package com.dfs;
 
+import com.dfs.CommandHandlers.AbortHandler;
 import com.dfs.CommandHandlers.CommitHandler;
 import com.dfs.CommandHandlers.NewTxnHandler;
 import com.dfs.CommandHandlers.WriteHandler;
@@ -91,18 +92,22 @@ public class ServerWorker implements Runnable {
         return new byte[]{};
     }
 
+    private synchronized void addToTransactionsMap(Integer id, Transaction transaction) {
+        transactions.put(id, transaction);
+    }
+
     private String handleCommand(byte[] data) throws IOException {
         if(messageParts[0] == null) {
             return "";
         }
         Integer id = Integer.parseInt(messageParts[1]);
-        Transaction transaction;
-        if(transactions.containsKey(id)) {
-            transaction = transactions.get(id);
-        } else {
-            transaction = new Transaction(messageParts);
-            transactions.put(id, transaction);
-        }
+        Transaction transaction = transactions.get(id);
+//        if(transactions.containsKey(id)) {
+//            transaction = transactions.get(id);
+//        } else {
+//            transaction = new Transaction(messageParts);
+//            transactions.put(id, transaction);
+//        }
 
         String commandType = messageParts[0].toUpperCase();
         System.out.println(commandType);
@@ -110,6 +115,9 @@ public class ServerWorker implements Runnable {
             if (commandType.contains(READ)) {
                 return "Read received";
             } else if (commandType.contains(NEW_TXN)) {
+                TCPServer.incrementTransactionCount();
+                transaction = new Transaction(messageParts, TCPServer.getTransactionCount());
+                addToTransactionsMap(TCPServer.getTransactionCount(), transaction);
                 NewTxnHandler newTxn = new NewTxnHandler(messageParts, data, transaction);
                 newTxn.parseCommand();
                 newTxn.parseFileName();
@@ -125,15 +133,15 @@ public class ServerWorker implements Runnable {
                 commit.writeToDisk();
                 return commit.getResponse();
             } else if (commandType.contains(ABORT)) {
-//                AbortHandler abort = new AbortHandler(data);
-//                abort.parseCommand();
-//                return abort.getResponse();
+                AbortHandler abort = new AbortHandler(messageParts, transaction);
+                abort.parseCommand();
+                abort.abortTransaction(transactions, directory);
+                return abort.getResponse();
             } else {
                 return "unknown command received";
             }
         } catch (DfsServerException e) {
             return e.getLocalizedMessage();
         }
-        return "test";
     }
 }

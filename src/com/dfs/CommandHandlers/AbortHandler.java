@@ -1,8 +1,10 @@
 package com.dfs.CommandHandlers;
 
 import com.dfs.DfsServerException;
+import com.dfs.Transaction;
 
-import java.io.BufferedReader;
+import java.io.File;
+import java.util.Map;
 
 import static com.dfs.Constants.ERROR_204;
 import static com.dfs.Constants.MESSAGE_PARTS;
@@ -11,25 +13,33 @@ public class AbortHandler implements CommandHandler {
 
     private int transactionId;
 
-    private String command;
-    private BufferedReader reader;
+    private String[] command;
+    private Transaction transaction;
 
-    public AbortHandler(String command, BufferedReader reader) {
+    public AbortHandler(String[] command, Transaction transaction) {
         this.command = command;
-        this.reader = reader;
+        this.transaction = transaction;
     }
 
     public String getResponse() {
-        return  "ABORT message received.\ntransaction ID = " + transactionId + "\n";
+        return  "ACK " + transactionId + "\n";
     }
 
     public void parseCommand() throws DfsServerException {
-        String[] parts;
-        parts = command.split(" ");
-        if(parts.length < MESSAGE_PARTS) {
+        if(command.length < MESSAGE_PARTS) {
             throw new DfsServerException(ERROR_204);
         }
-        transactionId = Integer.parseInt(parts[1]);
+
+        transactionId = Integer.parseInt(command[1]);
+    }
+
+    public void abortTransaction(Map<Integer, Transaction> transactions, String directory) {
+        transactions.remove(transactionId, transaction);
+        String filePath = directory + transaction.getFileName();
+        File file = new File(filePath);
+        if(file.exists()) {
+            file.delete();
+        }
     }
 
 }

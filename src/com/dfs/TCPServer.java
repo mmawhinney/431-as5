@@ -18,6 +18,15 @@ public class TCPServer {
     private ServerSocket serverSocket;
     private String directory;
 
+    private static int transactionCount = 0;
+
+    public static synchronized void incrementTransactionCount() {
+        transactionCount++;
+    }
+
+    public static int getTransactionCount() {
+        return transactionCount;
+    }
 
     public TCPServer(int port, String ip, String directory) throws IOException {
         InetAddress addr = InetAddress.getByName(ip);

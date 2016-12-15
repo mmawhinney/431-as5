@@ -16,6 +16,12 @@ public class Transaction {
         byteStream = new ByteArrayOutputStream();
     }
 
+    public Transaction(String[] command, int id) {
+        this.id = id;
+        currentSeqNum = Integer.parseInt(command[2]);
+        byteStream = new ByteArrayOutputStream();
+    }
+
     public ByteArrayOutputStream getByteStream() {
         return byteStream;
     }
