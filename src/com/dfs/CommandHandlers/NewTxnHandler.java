@@ -22,17 +22,14 @@ public class NewTxnHandler implements CommandHandler {
         this.transaction = transaction;
     }
 
-    public int getTransactionId() {
-        return transactionId;
-    }
 
     public String handleCommand() {
         try {
             parseCommand();
             parseFileName();
-            return "ACK " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
+            return ACK + " " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
+            return ERROR + " " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         }
     }
 
@@ -59,7 +56,6 @@ public class NewTxnHandler implements CommandHandler {
         }
         String filename = new String(filenameData, 0, j);
         transaction.setFileName(filename);
-        System.out.println(filename);
     }
 
 }
