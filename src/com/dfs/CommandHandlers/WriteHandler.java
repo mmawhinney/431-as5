@@ -3,8 +3,6 @@ package com.dfs.CommandHandlers;
 import com.dfs.DfsServerException;
 import com.dfs.Transaction;
 
-import java.io.*;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import static com.dfs.Constants.ERROR_204;
@@ -34,10 +32,9 @@ public class WriteHandler implements CommandHandler {
             handleData();
             Integer write = transaction.checkForMissingWrites();
             if(write != -1) {
-                System.out.println("Need to ask for resend");
                 return "ACK_RESEND " + transactionId + " " + seqNumber + " 0 0" + "\r\n\r\n\r\n";
             } else {
-                return "\n";
+                return "ACK " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
             }
         } catch (DfsServerException e) {
             return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + "\r\n\r\n" + e.getMessage().length() + "\n";
@@ -50,22 +47,20 @@ public class WriteHandler implements CommandHandler {
         }
         transactionId = Integer.parseInt(command[1]);
         seqNumber = Integer.parseInt(command[2]);
-        System.out.println("Write seqnum = " + seqNumber);
         contentLength = Integer.parseInt(command[3]);
     }
 
-    private void handleData() {
+    private void handleData() throws DfsServerException {
         // after we parsed the command, we get left with "\n\r\n" in the data array
         // This will get rid of those extra characters
         // it also trims the data array so it cuts off at contentLength
         byte[] fileData = Arrays.copyOfRange(data, 3, contentLength + 3);
         addData(fileData);
         transaction.incrementSeqNumber();
-        transaction.addToWriteMessages(seqNumber, fileData);
         transaction.incrementWriteCount();
     }
 
-    private void addData(byte[] fileData) {
+    private void addData(byte[] fileData) throws DfsServerException {
         transaction.addToWriteMessages(seqNumber, fileData);
     }
 }

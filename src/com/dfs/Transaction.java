@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.*;
 
+import static com.dfs.Constants.ERROR_202;
 import static com.dfs.Constants.ERROR_205;
 
 public class Transaction {
@@ -33,7 +34,10 @@ public class Transaction {
         writeCount = 1;
     }
 
-    public void addToWriteMessages(Integer seqNum, byte[] data) {
+    public void addToWriteMessages(Integer seqNum, byte[] data) throws DfsServerException {
+        if(writeMessages.containsKey(seqNum)) {
+            throw new DfsServerException(202, ERROR_202);
+        }
         writeMessages.put(seqNum, data);
     }
 
@@ -51,7 +55,6 @@ public class Transaction {
         Set keys = writeMessages.keySet();
         ArrayList<Integer> missingWrites = new ArrayList<>();
         for(int i = 1; i < writeCount; i++) {
-            System.out.println("key = " + i);
             if(!keys.contains(i)) {
                 missingWrites.add(i);
             }
@@ -102,7 +105,6 @@ public class Transaction {
         if(!isCommitAllowed()) {
             ArrayList<Integer> missingWrites = missingWrites();
             if(missingWrites != null) {
-                System.out.println("missing write found = " + missingWrites.get(0));
                 return missingWrites.get(0);
             }
         }

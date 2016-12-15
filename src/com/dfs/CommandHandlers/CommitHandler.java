@@ -34,14 +34,13 @@ public class CommitHandler implements CommandHandler {
             parseCommand();
             Integer write = transaction.checkForMissingWrites();
             if(write != -1) {
-                System.out.println("Need to ask for resend");
                 return "ACK_RESEND " + transactionId + " " + seqNumber + " 0 0" + "\r\n\r\n\r\n";
             }
             writeToDisk();
             removeTransaction(transactions);
-            return "ACK " + transactionId + " " + seqNumber + "\n";
+            return "ACK " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + " " + e.getMessage().length() + "\n";
+            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + "\r\n\r\n" + e.getMessage().length() + "\n";
         }
     }
 
