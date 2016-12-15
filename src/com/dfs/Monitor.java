@@ -4,7 +4,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Monitor {
@@ -16,18 +19,21 @@ public class Monitor {
 
     private static void logTransactions(Map<Integer, Transaction> transactions, String directory) {
         // Write to hidden view
-        ArrayList<JSONObject> collect = transactions
-                .values()
-                .stream()
-                .map(Monitor::convertTxnToJson)
-                .collect(Collectors.toCollection(ArrayList::new));
-        JSONArray arr = new JSONArray(collect);
-        try {
-            PrintWriter log = new PrintWriter(directory + Constants.TXN_FILE, "UTF-8");
-            log.println(arr.toString());
-            log.close();
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            e.printStackTrace();
+        if (filterCompleted(transactions).size() > 0) {
+            ArrayList<JSONObject> collect = transactions
+                    .values()
+                    .stream()
+                    .map(Monitor::convertTxnToJson)
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            JSONArray arr = new JSONArray(collect);
+            try {
+                PrintWriter log = new PrintWriter(directory + Constants.TXN_FILE, "UTF-8");
+                log.println(arr.toString());
+                log.close();
+            } catch (FileNotFoundException | UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -53,7 +59,12 @@ public class Monitor {
                 builder.append(temp);
             }
             reader.close();
-            JSONArray arr = new JSONArray(builder.toString());
+            String jsonTxt = builder.toString();
+            if (jsonTxt.isEmpty()) {
+                return new HashMap<>();
+            }
+
+            JSONArray arr = new JSONArray(jsonTxt);
             ArrayList<Transaction> collect = new ArrayList<>();
             for (int i = 0; i < arr.toList().size(); i++) {
                 JSONObject tmp = (JSONObject) arr.get(i);
@@ -70,10 +81,7 @@ public class Monitor {
             });
 
             // checks for incomplete txn
-            List<Transaction> collect1 = out.values()
-                    .stream()
-                    .filter(transaction -> transaction.getStatus() != Constants.TXN_STATE.COMPLETE)
-                    .collect(Collectors.toList());
+            ArrayList<Transaction> collect1 = filterCompleted(out);
 
             if (collect1.size() > 1) {
                 return out;
@@ -84,6 +92,13 @@ public class Monitor {
             e.printStackTrace();
             return null;
         }
+    }
+
+    private static ArrayList<Transaction> filterCompleted(Map<Integer, Transaction> out) {
+        return out.values()
+                .stream()
+                .filter(transaction -> transaction.getStatus() != Constants.TXN_STATE.COMPLETE)
+                .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public static Map<Integer, Transaction> bootCheck(String directory) {
@@ -116,10 +131,15 @@ public class Monitor {
         return new HashMap<>();
     }
 
-    public void cleanExit() {
-    }
-
-    public void dirtyExit() {
+    public static void cleanExit(String directory) {
+        File cmds = new File(directory + Constants.CMD_FILE);
+        File txns = new File(directory + Constants.TXN_FILE);
+        if (cmds.exists()) {
+            cmds.deleteOnExit();
+        }
+        if (txns.exists()) {
+            txns.deleteOnExit();
+        }
     }
 
     private static JSONObject convertTxnToJson(Transaction txn) {

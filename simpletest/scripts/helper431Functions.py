@@ -68,6 +68,10 @@ class Client:
 		fields = self.getACKreply(sock)
 		return fields
 
+	def exitServer(self):
+		sock = self.connect()
+		sock.send("EXIT 1 1 1 " + nl*3)
+
 	def getReadReply(self, sock):
 		reply = ""
 		errors = 0

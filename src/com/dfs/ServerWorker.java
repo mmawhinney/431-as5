@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 import static com.dfs.Constants.*;
@@ -122,7 +121,7 @@ public class ServerWorker implements Runnable {
             ReadHandler reader = new ReadHandler(data, directory);
             return reader.handleCommand();
         } else if (commandType.contains(NEW_TXN)) {
-            if(transactions.containsKey(id)) {
+            if (transactions.containsKey(id)) {
                 return "ERROR " + id + " " + messageParts[2] + " " + "201" + " " + ERROR_201.length() + "\r\n\r\n" + ERROR_201 + "\n";
             }
             TCPServer.incrementTransactionCount();
@@ -139,8 +138,12 @@ public class ServerWorker implements Runnable {
         } else if (commandType.contains(ABORT)) {
             AbortHandler abort = new AbortHandler(messageParts, transaction, transactions, directory);
             return abort.handleCommand();
+        } else if (commandType.contains(EXIT)) {
+            Monitor.cleanExit(directory);
+            System.exit(0);
         } else {
             return "Unknown command received";
         }
+        return "";
     }
 }
