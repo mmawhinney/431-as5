@@ -4,9 +4,7 @@ package com.dfs.CommandHandlers;
 import com.dfs.DfsServerException;
 import com.dfs.Transaction;
 
-import static com.dfs.Constants.ERROR_202;
-import static com.dfs.Constants.ERROR_204;
-import static com.dfs.Constants.MESSAGE_PARTS;
+import static com.dfs.Constants.*;
 
 public class NewTxnHandler implements CommandHandler {
 

@@ -1,15 +1,9 @@
-package com.dfs;
-
-import com.dfs.CommandHandlers.CommandHandler;
+package com.dfs.CommandHandlers;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-
-import static com.dfs.Constants.ERROR_202;
-import static com.dfs.Constants.ERROR_204;
-import static com.dfs.Constants.MESSAGE_PARTS;
 
 public class ReadHandler implements CommandHandler {
     private byte[] data;

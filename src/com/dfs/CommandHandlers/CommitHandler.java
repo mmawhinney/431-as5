@@ -6,9 +6,7 @@ import com.dfs.Transaction;
 import java.io.*;
 import java.util.Map;
 
-import static com.dfs.Constants.ERROR_204;
-import static com.dfs.Constants.ERROR_205;
-import static com.dfs.Constants.MESSAGE_PARTS;
+import static com.dfs.Constants.*;
 
 public class CommitHandler implements CommandHandler {
 
@@ -78,8 +76,7 @@ public class CommitHandler implements CommandHandler {
             byteStream.writeTo(fileStream);
             fileStream.flush();
             fileStream.getFD().sync();
-        } catch (FileNotFoundException e) {
-            System.out.println(e.getLocalizedMessage());
+            transaction.setStatus(TXN_STATE.COMPLETE);
         } catch (IOException e) {
             System.out.println(e.getLocalizedMessage());
         }

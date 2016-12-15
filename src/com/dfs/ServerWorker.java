@@ -1,11 +1,11 @@
 package com.dfs;
 
-import com.dfs.CommandHandlers.AbortHandler;
-import com.dfs.CommandHandlers.CommitHandler;
-import com.dfs.CommandHandlers.NewTxnHandler;
-import com.dfs.CommandHandlers.WriteHandler;
+import com.dfs.CommandHandlers.*;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -20,6 +20,7 @@ public class ServerWorker implements Runnable {
     private String[] messageParts;
     private Socket clientSocket;
     private String directory;
+    private ArrayList<String> commandLog = new ArrayList<>();
 
     private Map<Integer, Transaction> transactions = new HashMap<>();
 
@@ -56,7 +57,7 @@ public class ServerWorker implements Runnable {
         try {
             int bytesRead = 0;
             clientSocket.setSoTimeout(2000);
-            while((bytesRead = in.read(b)) > 0) {
+            while ((bytesRead = in.read(b)) > 0) {
                 stream.write(b, 0, bytesRead);
             }
             bytes = stream.toByteArray();
@@ -68,18 +69,18 @@ public class ServerWorker implements Runnable {
 //            System.out.println(e.getLocalizedMessage());
         }
 
-        try(ByteArrayOutputStream data = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream data = new ByteArrayOutputStream()) {
             messageParts = new String[MESSAGE_PARTS];
             int start = 0;
             int partCount = 0;
             int i = 0;
-            while(i < bytes.length) {
-                if((bytes[i] == 32 || bytes[i] == 13) && partCount < MESSAGE_PARTS) {
+            while (i < bytes.length) {
+                if ((bytes[i] == 32 || bytes[i] == 13) && partCount < MESSAGE_PARTS) {
                     messageParts[partCount] = new String(bytes, start, i - start);
                     partCount++;
                     start = i + 1;
                     i = start;
-                } else if(partCount == MESSAGE_PARTS) {
+                } else if (partCount == MESSAGE_PARTS) {
                     data.write(bytes[i]);
                     i++;
                 } else {
@@ -98,7 +99,7 @@ public class ServerWorker implements Runnable {
     }
 
     private String handleCommand(byte[] data) throws IOException {
-        if(messageParts[0] == null) {
+        if (messageParts[0] == null) {
             return "";
         }
         Integer id = Integer.parseInt(messageParts[1]);
@@ -111,7 +112,13 @@ public class ServerWorker implements Runnable {
 //        }
 
         String commandType = messageParts[0].toUpperCase();
-        System.out.println(commandType);
+//        System.out.println(commandType);
+        StringBuilder builder = new StringBuilder();
+        for (String str : messageParts) {
+            builder.append(str).append(" ");
+        }
+        System.out.println(builder.toString());
+        commandLog.add(builder.toString());
 
         if (commandType.contains(READ)) {
             ReadHandler reader = new ReadHandler(data, directory);

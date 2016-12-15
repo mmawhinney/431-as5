@@ -19,4 +19,5 @@ public class Constants {
     public static final String ACK_RESEND = "ACK_RESEND";
     public static final String ERROR = "ERROR";
 
+    public enum TXN_STATE {COMPLETE, NEW, PARTIAL}
 }
