@@ -209,6 +209,44 @@ def readUncommittedFileFailureTest(startSequence=1, commitOffset=0):
         print "\nPASS"
     else:
         print "\nFAIL"
+        
+def multithreadedWrite(startSequence=1, commitOffset=0):
+    print 
+    print "****** Multiple Write Test *********"
+    client1 = Client(port)
+    client2 = Client(port)
+    start1 = startSequence
+    start2 = startSequence + 1
+    fileName = "common3.txt"
+    txn = client1.new_txn(fileName)
+    print "Starting transaction with id", txn
+    msg1 = "this is the first test message"
+    print "Writing message with client1 seq#", start1
+    client1.write(txn, start1, msg1)
+    start1 += 2
+    msg2 = "\nthis is the second test message"
+    print "Writing message with client2 seq#", start2
+    client2.write(txn, start2, msg2)
+    start2 += 2
+    
+    msg3 = "\nthis is the third test message"
+    print "Writing message with client1 seq#", start1
+    client1.write(txn, start1, msg3)
+    msg4 = "\nthis is the fourth test message"
+    print "Writing message with client2 seq#", start2
+    client2.write(txn, start2, msg4)
+
+    ret = client2.commit(txn, 4+commitOffset)
+    if ret[0] == "ACK" or ret[0] == "ack":
+        print "Recieved ACK"
+        print "Testing file contents"
+        if testContents(userID+fileName,msg1+msg2+msg3+msg4,True):
+            print "\nPASS"
+        else:
+            print "\nFAIL"
+    else:
+        print "\nFAIL"
+    os.remove(fileName)
 
 def readTest():
     print
@@ -231,6 +269,7 @@ def basicTests(startSequence=1,commitOffset=0):
     omissionFailure(startSequence, commitOffset)
     readTest()
     readUncommittedFileFailureTest(startSequence, commitOffset)
+    multithreadedWrite(startSequence, commitOffset)
     cleanExit()
 
 # Fork server and Run Tests
