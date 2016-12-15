@@ -4,10 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Monitor {
@@ -65,7 +62,16 @@ public class Monitor {
             }
             HashMap<Integer, Transaction> out = new HashMap<>();
             collect.forEach((transaction) -> out.put(transaction.getId(), transaction));
-            return out;
+            List<Transaction> collect1 = out.values()
+                    .stream()
+                    .filter(transaction -> transaction.getStatus() != Constants.TXN_STATE.COMPLETE)
+                    .collect(Collectors.toList());
+
+            if(collect1.size() > 1){
+                return out;
+            } else {
+                return new HashMap<>();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -76,10 +82,15 @@ public class Monitor {
         try {
             File cmds = new File(directory + Constants.CMD_FILE);
             File txns = new File(directory + Constants.TXN_FILE);
-            if(!cmds.exists()) {
-                cmds.createNewFile();
-            } else if(!txns.exists()) {
-                txns.createNewFile();
+            if (!cmds.exists()) {
+                if (!cmds.createNewFile()) {
+                    throw new FileNotFoundException("Could not make .cmds file");
+                }
+            }
+            if (!txns.exists()) {
+                if (!txns.createNewFile()) {
+                    throw new FileNotFoundException("Could not make .txns file");
+                }
             }
             return recover(txns.getCanonicalPath());
 //            for(Transaction t : tmp.values()){
@@ -92,7 +103,7 @@ public class Monitor {
 //            }
 
         } catch (Exception e) {
-            System.out.println("No log file found, clean boot?");
+            System.out.println(e.getMessage());
         }
         return new HashMap<>();
     }
