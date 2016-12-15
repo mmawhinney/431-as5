@@ -8,6 +8,7 @@ import com.dfs.CommandHandlers.WriteHandler;
 import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -64,7 +65,7 @@ public class ServerWorker implements Runnable {
             bytes = stream.toByteArray();
         } catch (IOException e) {
             bytes = stream.toByteArray();
-            System.out.println(e.getLocalizedMessage());
+//            System.out.println(e.getLocalizedMessage());
         }
 
         try(ByteArrayOutputStream data = new ByteArrayOutputStream()) {
@@ -124,7 +125,7 @@ public class ServerWorker implements Runnable {
             WriteHandler write = new WriteHandler(messageParts, data, transaction);
             return write.handleCommand();
         } else if (commandType.contains(COMMIT)) {
-            CommitHandler commit = new CommitHandler(messageParts, transaction, directory);
+            CommitHandler commit = new CommitHandler(messageParts, transaction, directory, transactions);
             return commit.handleCommand();
         } else if (commandType.contains(ABORT)) {
             AbortHandler abort = new AbortHandler(messageParts, transaction, transactions, directory);

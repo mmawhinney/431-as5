@@ -5,6 +5,8 @@ import com.dfs.DfsServerException;
 import com.dfs.Transaction;
 
 import static com.dfs.Constants.ERROR_202;
+import static com.dfs.Constants.ERROR_204;
+import static com.dfs.Constants.MESSAGE_PARTS;
 
 public class NewTxnHandler implements CommandHandler {
 
@@ -31,13 +33,16 @@ public class NewTxnHandler implements CommandHandler {
         try {
             parseCommand();
             parseFileName();
-            return "ACK " + transactionId + " " + seqNumber + "\n";
+            return "ACK " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + " " + e.getMessage().length() + "\n";
+            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + "\r\n\r\n" + e.getMessage().length() + "\n";
         }
     }
 
     private void parseCommand() throws DfsServerException {
+        if(command.length < MESSAGE_PARTS) {
+            throw new DfsServerException(204, ERROR_204);
+        }
         transactionId = transaction.getId();
         seqNumber = Integer.parseInt(command[2]);
         contentLength = Integer.parseInt(command[3]);

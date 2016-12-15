@@ -4,6 +4,7 @@ import com.dfs.DfsServerException;
 import com.dfs.Transaction;
 
 import java.io.*;
+import java.util.Map;
 
 import static com.dfs.Constants.ERROR_204;
 import static com.dfs.Constants.ERROR_205;
@@ -17,19 +18,27 @@ public class CommitHandler implements CommandHandler {
     private String filename;
     private Transaction transaction;
     private String directory;
+    private Map<Integer, Transaction> transactions;
 
     private String[] command;
 
-    public CommitHandler(String[] command, Transaction transaction, String directory) {
+    public CommitHandler(String[] command, Transaction transaction, String directory, Map<Integer, Transaction> transactions) {
         this.command = command;
         this.transaction = transaction;
         this.directory = directory;
+        this.transactions = transactions;
     }
 
     public String handleCommand() {
         try {
             parseCommand();
+            Integer write = transaction.checkForMissingWrites();
+            if(write != -1) {
+                System.out.println("Need to ask for resend");
+                return "ACK_RESEND " + transactionId + " " + seqNumber + " 0 0" + "\r\n\r\n\r\n";
+            }
             writeToDisk();
+            removeTransaction(transactions);
             return "ACK " + transactionId + " " + seqNumber + "\n";
         } catch (DfsServerException e) {
             return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + " " + e.getMessage().length() + "\n";
@@ -49,6 +58,7 @@ public class CommitHandler implements CommandHandler {
     }
 
     private void writeToDisk() throws DfsServerException {
+        transaction.writeDatatoStream();
         String filepath = directory + transaction.getFileName();
         File file = new File(filepath);
         boolean fileExists = file.exists();
@@ -75,4 +85,9 @@ public class CommitHandler implements CommandHandler {
             System.out.println(e.getLocalizedMessage());
         }
     }
+
+    private void removeTransaction(Map<Integer, Transaction> transactions) {
+        transactions.remove(transactionId);
+    }
+
 }
