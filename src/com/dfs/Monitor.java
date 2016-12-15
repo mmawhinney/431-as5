@@ -35,7 +35,7 @@ public class Monitor {
 
     }
 
-    private static void logCommands(ArrayList<String> commands, String directory) {
+    public static void logCommands(ArrayList<String> commands, String directory) {
         try {
             PrintWriter log = new PrintWriter(directory + Constants.CMD_FILE, "UTF-8");
             log.println(commands.toString());
@@ -72,23 +72,29 @@ public class Monitor {
         }
     }
 
-    public static void bootCheck(String directory) {
+    public static Map<Integer, Transaction> bootCheck(String directory) {
         try {
             File cmds = new File(directory + Constants.CMD_FILE);
             File txns = new File(directory + Constants.TXN_FILE);
-            Map<Integer, Transaction> tmp = recover(txns.getCanonicalPath());
-            for(Transaction t : tmp.values()){
-                System.out.println(t.getId() + " " + t.getStatus());
+            if(!cmds.exists()) {
+                cmds.createNewFile();
+            } else if(!txns.exists()) {
+                txns.createNewFile();
             }
-            BufferedReader reader = new BufferedReader(new FileReader(cmds));
-            String temp;
-            while ((temp = reader.readLine()) != null) {
-                System.out.println(temp);
-            }
+            return recover(txns.getCanonicalPath());
+//            for(Transaction t : tmp.values()){
+//                System.out.println(t.getId() + " " + t.getStatus());
+//            }
+//            BufferedReader reader = new BufferedReader(new FileReader(cmds));
+//            String temp;
+//            while ((temp = reader.readLine()) != null) {
+//                System.out.println(temp);
+//            }
 
         } catch (Exception e) {
             System.out.println("No log file found, clean boot?");
         }
+        return new HashMap<>();
     }
 
     public void cleanExit() {

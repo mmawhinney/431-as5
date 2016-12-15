@@ -5,7 +5,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
 
@@ -32,10 +31,9 @@ public class TCPServer {
     public TCPServer(int port, String ip, String directory) throws IOException {
         InetAddress addr = InetAddress.getByName(ip);
         serverSocket = new ServerSocket(port, 0, addr);
-        transactions = new HashMap<>();
         commandLog = new ArrayList<>();
         this.directory = directory;
-        Monitor.bootCheck(directory);
+        transactions = Monitor.bootCheck(directory);
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             Monitor.doExit(transactions, commandLog, directory);
         }));

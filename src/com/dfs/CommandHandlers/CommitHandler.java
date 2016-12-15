@@ -38,7 +38,7 @@ public class CommitHandler implements CommandHandler {
             removeTransaction(transactions);
             return "ACK " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + "\r\n\r\n" + e.getMessage().length() + "\n";
+            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage().length() + "\r\n\r\n" +  e.getMessage() + "\n";
         }
     }
 

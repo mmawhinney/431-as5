@@ -22,7 +22,7 @@ public class ServerWorker implements Runnable {
     private String directory;
     private ArrayList<String> commandLog;
 
-    private Map<Integer, Transaction> transactions = new HashMap<>();
+    private Map<Integer, Transaction> transactions;
 
     public ServerWorker(Socket clientSocket, Map<Integer, Transaction> transactions, String directory, ArrayList<String> commandLog) {
         this.commandLog = commandLog;
@@ -122,6 +122,9 @@ public class ServerWorker implements Runnable {
             ReadHandler reader = new ReadHandler(data, directory);
             return reader.handleCommand();
         } else if (commandType.contains(NEW_TXN)) {
+            if(transactions.containsKey(id)) {
+                return "ERROR " + id + " " + messageParts[2] + " " + "201" + " " + ERROR_201.length() + "\r\n\r\n" + ERROR_201 + "\n";
+            }
             TCPServer.incrementTransactionCount();
             transaction = new Transaction(messageParts, TCPServer.getTransactionCount());
             addToTransactionsMap(TCPServer.getTransactionCount(), transaction);

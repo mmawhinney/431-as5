@@ -2,6 +2,7 @@ package com.dfs.CommandHandlers;
 
 import com.dfs.Constants;
 import com.dfs.DfsServerException;
+import com.dfs.Monitor;
 import com.dfs.Transaction;
 
 import java.io.File;
@@ -27,21 +28,18 @@ public class AbortHandler implements CommandHandler {
         this.directory = directory;
     }
 
-    public String getResponse() {
-        return  "ACK " + transactionId + "\n";
-    }
-
     public String handleCommand() {
         try {
             parseCommand();
             abortTransaction();
-            return "ACK " + transactionId + "\n";
+
+            return "ACK " + transactionId + "\r\n\r\n\r\n";
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + " " + e.getMessage().length() + "\n";
+            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode()  + " " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         }
     }
 
-    public void parseCommand() throws DfsServerException {
+    private void parseCommand() throws DfsServerException {
         if(command.length < MESSAGE_PARTS) {
             throw new DfsServerException(204, ERROR_204);
         }
@@ -49,7 +47,7 @@ public class AbortHandler implements CommandHandler {
         transactionId = Integer.parseInt(command[1]);
     }
 
-    public void abortTransaction() {
+    private void abortTransaction() {
 //        transactions.remove(transactionId, transaction);
         transactions.get(transactionId).setStatus(Constants.TXN_STATE.COMPLETE);
         String filePath = directory + transaction.getFileName();

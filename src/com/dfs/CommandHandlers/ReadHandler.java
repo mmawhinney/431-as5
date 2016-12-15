@@ -29,9 +29,9 @@ public class ReadHandler implements CommandHandler {
             reader.close();
             return builder.toString();
         } catch (FileNotFoundException e) {
-            return "ERROR " + "206 " + e.getMessage() + "\r\n\r\n" + e.getMessage().length() + "\n";
+            return "ERROR -1 0 "+ "206 " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         } catch (IOException e) {
-            return "ERROR " + "205 " + e.getMessage() + "\r\n\r\n" + e.getMessage().length() + "\n";
+            return "ERROR -1 0 "+ "205 " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         }
     }
 
