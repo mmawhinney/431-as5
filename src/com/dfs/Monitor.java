@@ -3,9 +3,7 @@ package com.dfs;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,17 +12,41 @@ import java.util.stream.Collectors;
 
 public class Monitor {
 
-    public void logTransactions(Map<Integer, Transaction> transactions) {
+    public static void doExit(Map<Integer, Transaction> transactions, ArrayList<String> cmds, String directory) {
+        logTransactions(transactions, directory);
+        logCommands(cmds, directory);
+    }
+
+    private static void logTransactions(Map<Integer, Transaction> transactions, String directory) {
         // Write to hidden view
         ArrayList<JSONObject> collect = transactions
                 .values()
                 .stream()
-                .map(this::convertTxnToJson)
+                .map(Monitor::convertTxnToJson)
                 .collect(Collectors.toCollection(ArrayList::new));
         JSONArray arr = new JSONArray(collect);
+        try {
+            PrintWriter log = new PrintWriter(directory + ".transactions", "UTF-8");
+            log.println(arr.toString());
+            log.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
     }
 
-    public Map<Integer, Transaction> recover(String file) {
+    private static void logCommands(ArrayList<String> commands, String directory) {
+        try {
+            PrintWriter log = new PrintWriter(directory + ".cmdlog", "UTF-8");
+            log.println(commands.toString());
+            log.close();
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static Map<Integer, Transaction> recover(String file) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             StringBuilder builder = new StringBuilder();
@@ -56,7 +78,7 @@ public class Monitor {
     public void dirtyExit() {
     }
 
-    private JSONObject convertTxnToJson(Transaction txn) {
+    private static JSONObject convertTxnToJson(Transaction txn) {
         JSONObject temp = new JSONObject();
         temp.put("id", txn.getId());
         temp.put("seq", txn.getCurrentSeqNum());
@@ -68,7 +90,7 @@ public class Monitor {
         return temp;
     }
 
-    public Transaction makeTxnFromJson(JSONObject obj) {
+    private static Transaction makeTxnFromJson(JSONObject obj) {
         return new Transaction(obj);
     }
 

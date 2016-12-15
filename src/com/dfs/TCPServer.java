@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,7 +15,7 @@ public class TCPServer {
     // Since WRITE & COMMIT messages contain the transaction id, this will let us query for the correct transaction
     // just based on that ID
     private Map<Integer, Transaction> transactions;
-
+    private ArrayList<String> commandLog;
     private ServerSocket serverSocket;
     private String directory;
 
@@ -32,13 +33,18 @@ public class TCPServer {
         InetAddress addr = InetAddress.getByName(ip);
         serverSocket = new ServerSocket(port, 0, addr);
         transactions = new HashMap<>();
+        commandLog = new ArrayList<>();
         this.directory = directory;
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Monitor.doExit(transactions, commandLog, directory);
+        }));
     }
 
     public void run() throws IOException {
-        while(true) {
+
+        while (true) {
             Socket clientSocket = serverSocket.accept();
-            Thread serverWorker = new Thread(new ServerWorker(clientSocket, transactions, directory));
+            Thread serverWorker = new Thread(new ServerWorker(clientSocket, transactions, directory, commandLog));
             serverWorker.start();
         }
     }

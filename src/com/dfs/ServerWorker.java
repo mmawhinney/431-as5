@@ -20,14 +20,16 @@ public class ServerWorker implements Runnable {
     private String[] messageParts;
     private Socket clientSocket;
     private String directory;
-    private ArrayList<String> commandLog = new ArrayList<>();
+    private ArrayList<String> commandLog;
 
     private Map<Integer, Transaction> transactions = new HashMap<>();
 
-    public ServerWorker(Socket clientSocket, Map<Integer, Transaction> transactions, String directory) {
+    public ServerWorker(Socket clientSocket, Map<Integer, Transaction> transactions, String directory, ArrayList<String> commandLog) {
+        this.commandLog = commandLog;
         this.clientSocket = clientSocket;
         this.transactions = transactions;
         this.directory = directory;
+
     }
 
     @Override
@@ -79,13 +81,10 @@ public class ServerWorker implements Runnable {
                     messageParts[partCount] = new String(bytes, start, i - start);
                     partCount++;
                     start = i + 1;
-                    i = start;
                 } else if (partCount == MESSAGE_PARTS) {
                     data.write(bytes[i]);
-                    i++;
-                } else {
-                    i++;
                 }
+                i++;
             }
             return data.toByteArray();
         } catch (IOException e) {
@@ -110,15 +109,14 @@ public class ServerWorker implements Runnable {
 //            transaction = new Transaction(messageParts);
 //            transactions.put(id, transaction);
 //        }
-
         String commandType = messageParts[0].toUpperCase();
-//        System.out.println(commandType);
         StringBuilder builder = new StringBuilder();
         for (String str : messageParts) {
             builder.append(str).append(" ");
         }
-        System.out.println(builder.toString());
-        commandLog.add(builder.toString());
+        String cmd = builder.toString();
+        System.out.println(cmd);
+        commandLog.add(cmd);
 
         if (commandType.contains(READ)) {
             ReadHandler reader = new ReadHandler(data, directory);
@@ -139,7 +137,7 @@ public class ServerWorker implements Runnable {
             AbortHandler abort = new AbortHandler(messageParts, transaction, transactions, directory);
             return abort.handleCommand();
         } else {
-            return "unknown command received";
+            return "Unknown command received";
         }
     }
 }

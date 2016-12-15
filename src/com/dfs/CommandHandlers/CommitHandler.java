@@ -83,7 +83,8 @@ public class CommitHandler implements CommandHandler {
     }
 
     private void removeTransaction(Map<Integer, Transaction> transactions) {
-        transactions.remove(transactionId);
+//        transactions.remove(transactionId);
+        transactions.get(transactionId).setStatus(TXN_STATE.COMPLETE);
     }
 
 }

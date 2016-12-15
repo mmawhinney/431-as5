@@ -1,5 +1,6 @@
 package com.dfs.CommandHandlers;
 
+import com.dfs.Constants;
 import com.dfs.DfsServerException;
 import com.dfs.Transaction;
 
@@ -49,7 +50,8 @@ public class AbortHandler implements CommandHandler {
     }
 
     public void abortTransaction() {
-        transactions.remove(transactionId, transaction);
+//        transactions.remove(transactionId, transaction);
+        transactions.get(transactionId).setStatus(Constants.TXN_STATE.COMPLETE);
         String filePath = directory + transaction.getFileName();
         File file = new File(filePath);
         if(file.exists()) {
