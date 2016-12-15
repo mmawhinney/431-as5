@@ -29,16 +29,19 @@ public class CommitHandler implements CommandHandler {
 
     public String handleCommand() {
         try {
+            if(transaction.transactionConplete()) {
+                return ERROR + " " + transactionId + " " + seqNumber + " 201 " + ERROR_201.length() + "\r\n\r\n" +  ERROR_201 + "\n";
+            }
             parseCommand();
             Integer write = transaction.checkForMissingWrites();
             if(write != -1) {
-                return "ACK_RESEND " + transactionId + " " + seqNumber + " 0 0" + "\r\n\r\n\r\n";
+                return ACK_RESEND + " " + transactionId + " " + seqNumber + " 0 0" + "\r\n\r\n\r\n";
             }
             writeToDisk();
             removeTransaction(transactions);
-            return "ACK " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
+            return ACK + " " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage().length() + "\r\n\r\n" +  e.getMessage() + "\n";
+            return ERROR + " " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage().length() + "\r\n\r\n" +  e.getMessage() + "\n";
         }
     }
 
@@ -83,7 +86,6 @@ public class CommitHandler implements CommandHandler {
     }
 
     private void removeTransaction(Map<Integer, Transaction> transactions) {
-//        transactions.remove(transactionId);
         transactions.get(transactionId).setStatus(TXN_STATE.COMPLETE);
     }
 

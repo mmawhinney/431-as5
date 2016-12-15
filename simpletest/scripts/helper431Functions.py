@@ -46,6 +46,9 @@ class Client:
 		sock = self.connect()
 		sock.send("NEW_TXN -1 0 " + str(len(fileName)) + nl*2 + fileName+"\n")
 		fields = self.getACKreply(sock)
+		print fields
+		if fields[0] == "ERROR":
+			return -1
 		if self.display:
 			print "File", fileName, "new transaction:", fields[1]
 		return fields[1]

@@ -19,7 +19,6 @@ public class Constants {
     public static final String ACK = "ACK";
     public static final String ACK_RESEND = "ACK_RESEND";
     public static final String ERROR = "ERROR";
-    public static final String CMD_FILE = ".cmdlog";
     public static final String TXN_FILE = ".transactions";
 
     public static final long TIMEOUT = 300000;

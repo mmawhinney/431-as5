@@ -66,6 +66,9 @@ def commonCaseTest(startSequence=1,commitOffset=0):
     client = Client(port)
     fileName = "common.txt"
     txn = client.new_txn(fileName)
+    if txn == -1:
+        print "\nFAIL"
+        return
     print "Starting transaction with id", txn
     msg1 = "this is a test message"
     print "Writing message with seq#", startSequence
@@ -80,7 +83,7 @@ def commonCaseTest(startSequence=1,commitOffset=0):
             print "\nFAIL"
     else:
         print "\nFAIL"
-    os.remove(userID + fileName)
+    os.remove(fileName)
         
 def writeMultipleMessages(startSequence=1,commitOffset=0):
     print 
@@ -106,7 +109,7 @@ def writeMultipleMessages(startSequence=1,commitOffset=0):
             print "\nFAIL"
     else:
         print "\nFAIL"
-    os.remove(userID + fileName)
+    os.remove(fileName)
     
     
 def omissionFailure(startSequence=1,commitOffset=0):
@@ -128,9 +131,9 @@ def omissionFailure(startSequence=1,commitOffset=0):
         print "resend received"
     else:
         print "no resend recieved"
-        
     msg2 = "\nthe middle message"
     startSequence -= 1
+    print "Writing message with seq#", startSequence
     client.write(txn, startSequence, msg2)
     ret = client.commit(txn, 3+commitOffset)
     if ret[0] == "ACK" or ret[0] == "ack":
@@ -142,7 +145,7 @@ def omissionFailure(startSequence=1,commitOffset=0):
             print "\nFAIL"
     else:
         print "\nFAIL"
-    os.remove(userID + fileName)
+    os.remove(fileName)
 
 def abortedTransactionsTest(startSequence=1,commitOffset=0):
     print
@@ -158,20 +161,18 @@ def abortedTransactionsTest(startSequence=1,commitOffset=0):
     client.abort(txn)
     print "Checking if file was created"
     time.sleep(0.1)
-    exists = os.path.isfile(userID+fileName)
+    exists = os.path.isfile(fileName)
     print exists
     print
 
     fileName = "aborted2.txt"
     print "Creating empty file '", fileName, "' on server"
-    tmpFile = open(userID + fileName,'w')
+    tmpFile = open(fileName,'w')
     tmpFile.write('')
     tmpFile.close()
     print "Checking file status"
-    print os.path.isfile(userID + fileName)
+    print os.path.isfile(fileName)
     
-    
-
     txn = client.new_txn(fileName)
     print "Starting transaction with id", txn, "for file", fileName
     print "Writing message with seq#", startSequence
@@ -179,7 +180,7 @@ def abortedTransactionsTest(startSequence=1,commitOffset=0):
     print "Sending Abort Message for txn",txn
     client.abort(txn)
     print "Checking if file was modified"
-    tmpFile = open(userID + fileName,'r')
+    tmpFile = open(fileName,'r')
     fileContents = tmpFile.read()
     modified = False
     if len(fileContents) > 0:
@@ -191,17 +192,23 @@ def abortedTransactionsTest(startSequence=1,commitOffset=0):
     else:
         print "PASS"
     
-def omissionFailureTest(startSequence=1,commitOffset=0):
-    print
-    print "****** omission failures *********"
-    client = Client(port,True)
-    fileName = "ommision.txt"
+    
+def readUncommittedFileFailureTest(startSequence=1, commitOffset=0):
+    print 
+    print "****** Read Uncommitted Test *********"
+    client = Client(port)
+    fileName = "common.txt"
     txn = client.new_txn(fileName)
-    print "Starting transaction with id", txn, "for file", fileName
+    print "Starting transaction with id", txn
     msg1 = "this is a test message"
     print "Writing message with seq#", startSequence
-    client.write(txn, endSequence, msg1)
-    print "Sending Abort Message for txn",txn
+    client.write(txn, startSequence, msg1)
+    print "try to read from file"
+    read = client.read(fileName)
+    if "ERROR" in read:
+        print "\nPASS"
+    else:
+        print "\nFAIL"
 
 def readTest():
     print
@@ -218,12 +225,13 @@ def cleanExit():
 
 def basicTests(startSequence=1,commitOffset=0):
     print "testing with startSequence,", startSequence, "and commit offset:", commitOffset
-    commonCaseTest(startSequence, commitOffset)
-    writeMultipleMessages(startSequence, commitOffset)
-    abortedTransactionsTest(startSequence, commitOffset)
-    omissionFailure(startSequence, commitOffset)
-    readTest()
-    #cleanExit()
+    # commonCaseTest(startSequence, commitOffset)
+    # writeMultipleMessages(startSequence, commitOffset)
+#     abortedTransactionsTest(startSequence, commitOffset)
+#     omissionFailure(startSequence, commitOffset)
+#     readTest()
+#     readUncommittedFileFailureTest(startSequence, commitOffset)
+    cleanExit()
     #omissionFailureTest(startSequence, commitOffset)
 
 # Fork server and Run Tests

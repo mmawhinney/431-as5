@@ -5,8 +5,7 @@ import com.dfs.Transaction;
 
 import java.util.Arrays;
 
-import static com.dfs.Constants.ERROR_204;
-import static com.dfs.Constants.MESSAGE_PARTS;
+import static com.dfs.Constants.*;
 
 
 public class WriteHandler implements CommandHandler {
@@ -28,16 +27,19 @@ public class WriteHandler implements CommandHandler {
 
     public String handleCommand() {
         try {
+            if(transaction.transactionConplete()) {
+                return ERROR + " " + transactionId + " " + seqNumber + " 201 " + ERROR_201.length() + "\r\n\r\n" +  ERROR_201 + "\n";
+            }
             parseCommand();
             handleData();
             Integer write = transaction.checkForMissingWrites();
             if(write != -1) {
-                return "ACK_RESEND " + transactionId + " " + seqNumber + " 0 0" + "\r\n\r\n\r\n";
+                return ACK_RESEND + " " + transactionId + " " + seqNumber + " 0 0" + "\r\n\r\n\r\n";
             } else {
-                return "ACK " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
+                return ACK + " " + transactionId + " " + seqNumber + "\r\n\r\n\r\n";
             }
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
+            return ERROR + " " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         }
     }
 

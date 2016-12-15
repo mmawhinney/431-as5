@@ -12,14 +12,11 @@ import java.util.stream.Collectors;
 
 public class Monitor {
 
-    public static void doExit(Map<Integer, Transaction> transactions, ArrayList<String> cmds, String directory) {
+    public static void doExit(Map<Integer, Transaction> transactions, String directory) {
         logTransactions(transactions, directory);
-        logCommands(cmds, directory);
     }
 
     private static void logTransactions(Map<Integer, Transaction> transactions, String directory) {
-        // Write to hidden view
-        if (filterCompleted(transactions).size() > 0) {
             ArrayList<JSONObject> collect = transactions
                     .values()
                     .stream()
@@ -34,22 +31,9 @@ public class Monitor {
             } catch (FileNotFoundException | UnsupportedEncodingException e) {
                 e.printStackTrace();
             }
-        }
-
     }
 
-    public static void logCommands(ArrayList<String> commands, String directory) {
-        try {
-            PrintWriter log = new PrintWriter(directory + Constants.CMD_FILE, "UTF-8");
-            log.println(commands.toString());
-            log.close();
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public static Map<Integer, Transaction> recover(String file) {
+    private static Map<Integer, Transaction> recover(String file) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             StringBuilder builder = new StringBuilder();
@@ -80,10 +64,7 @@ public class Monitor {
                 }
             });
 
-            // checks for incomplete txn
-            ArrayList<Transaction> collect1 = filterCompleted(out);
-
-            if (collect1.size() > 1) {
+            if (collect.size() > 1) {
                 return out;
             } else {
                 return new HashMap<>();
@@ -94,37 +75,15 @@ public class Monitor {
         }
     }
 
-    private static ArrayList<Transaction> filterCompleted(Map<Integer, Transaction> out) {
-        return out.values()
-                .stream()
-                .filter(transaction -> transaction.getStatus() != Constants.TXN_STATE.COMPLETE)
-                .collect(Collectors.toCollection(ArrayList::new));
-    }
-
     public static Map<Integer, Transaction> bootCheck(String directory) {
         try {
-            File cmds = new File(directory + Constants.CMD_FILE);
             File txns = new File(directory + Constants.TXN_FILE);
-            if (!cmds.exists()) {
-                if (!cmds.createNewFile()) {
-                    throw new FileNotFoundException("Could not make .cmds file");
-                }
-            }
             if (!txns.exists()) {
                 if (!txns.createNewFile()) {
                     throw new FileNotFoundException("Could not make .txns file");
                 }
             }
             return recover(txns.getCanonicalPath());
-//            for(Transaction t : tmp.values()){
-//                System.out.println(t.getId() + " " + t.getStatus());
-//            }
-//            BufferedReader reader = new BufferedReader(new FileReader(cmds));
-//            String temp;
-//            while ((temp = reader.readLine()) != null) {
-//                System.out.println(temp);
-//            }
-
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -132,11 +91,7 @@ public class Monitor {
     }
 
     public static void cleanExit(String directory) {
-        File cmds = new File(directory + Constants.CMD_FILE);
         File txns = new File(directory + Constants.TXN_FILE);
-        if (cmds.exists()) {
-            cmds.deleteOnExit();
-        }
         if (txns.exists()) {
             txns.deleteOnExit();
         }

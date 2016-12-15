@@ -8,8 +8,7 @@ import com.dfs.Transaction;
 import java.io.File;
 import java.util.Map;
 
-import static com.dfs.Constants.ERROR_204;
-import static com.dfs.Constants.MESSAGE_PARTS;
+import static com.dfs.Constants.*;
 
 public class AbortHandler implements CommandHandler {
 
@@ -33,9 +32,9 @@ public class AbortHandler implements CommandHandler {
             parseCommand();
             abortTransaction();
 
-            return "ACK " + transactionId + "\r\n\r\n\r\n";
+            return ACK + " " + transactionId + "\r\n\r\n\r\n";
         } catch (DfsServerException e) {
-            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode()  + " " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
+            return ERROR + " " + transactionId + " " + seqNumber + " " + e.getErrorCode()  + " " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         }
     }
 
@@ -48,7 +47,6 @@ public class AbortHandler implements CommandHandler {
     }
 
     private void abortTransaction() {
-//        transactions.remove(transactionId, transaction);
         transactions.get(transactionId).setStatus(Constants.TXN_STATE.COMPLETE);
         String filePath = directory + transaction.getFileName();
         File file = new File(filePath);

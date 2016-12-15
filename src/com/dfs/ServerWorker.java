@@ -8,7 +8,6 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.ArrayList;
 import java.util.Map;
 
 import static com.dfs.Constants.*;
@@ -19,16 +18,13 @@ public class ServerWorker implements Runnable {
     private String[] messageParts;
     private Socket clientSocket;
     private String directory;
-    private ArrayList<String> commandLog;
 
     private Map<Integer, Transaction> transactions;
 
-    public ServerWorker(Socket clientSocket, Map<Integer, Transaction> transactions, String directory, ArrayList<String> commandLog) {
-        this.commandLog = commandLog;
+    public ServerWorker(Socket clientSocket, Map<Integer, Transaction> transactions, String directory) {
         this.clientSocket = clientSocket;
         this.transactions = transactions;
         this.directory = directory;
-
     }
 
     @Override
@@ -67,7 +63,6 @@ public class ServerWorker implements Runnable {
             bytes = stream.toByteArray();
         } catch (IOException e) {
             bytes = stream.toByteArray();
-//            System.out.println(e.getLocalizedMessage());
         }
 
         try (ByteArrayOutputStream data = new ByteArrayOutputStream()) {
@@ -102,27 +97,14 @@ public class ServerWorker implements Runnable {
         }
         Integer id = Integer.parseInt(messageParts[1]);
         Transaction transaction = transactions.get(id);
-//        if(transactions.containsKey(id)) {
-//            transaction = transactions.get(id);
-//        } else {
-//            transaction = new Transaction(messageParts);
-//            transactions.put(id, transaction);
-//        }
         String commandType = messageParts[0].toUpperCase();
-        StringBuilder builder = new StringBuilder();
-        for (String str : messageParts) {
-            builder.append(str).append(" ");
-        }
-        String cmd = builder.toString();
-        System.out.println(cmd);
-        commandLog.add(cmd);
 
         if (commandType.contains(READ)) {
             ReadHandler reader = new ReadHandler(data, directory);
             return reader.handleCommand();
         } else if (commandType.contains(NEW_TXN)) {
-            if (transactions.containsKey(id)) {
-                return "ERROR " + id + " " + messageParts[2] + " " + "201" + " " + ERROR_201.length() + "\r\n\r\n" + ERROR_201 + "\n";
+            if (transactions.containsKey(TCPServer.getTransactionCount() + 1)) {
+                return ERROR + " " + id + " " + messageParts[2] + " " + "201" + " " + ERROR_201.length() + "\r\n\r\n" + ERROR_201 + "\n";
             }
             TCPServer.incrementTransactionCount();
             transaction = new Transaction(messageParts, TCPServer.getTransactionCount());
@@ -142,8 +124,8 @@ public class ServerWorker implements Runnable {
             Monitor.cleanExit(directory);
             System.exit(0);
         } else {
-            return "Unknown command received";
+            return ERROR + " " + id + " 0 " + "202 " + ERROR_202.length() + "\r\n\r\n" + ERROR_202 + "\n";
         }
-        return "";
+        return ERROR + " " + id + " 0 " + "202 " + ERROR_202.length() + "\r\n\r\n" + ERROR_202 + "\n";
     }
 }

@@ -5,6 +5,8 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
+import static com.dfs.Constants.ERROR;
+
 public class ReadHandler implements CommandHandler {
     private byte[] data;
     private String filename;
@@ -24,14 +26,15 @@ public class ReadHandler implements CommandHandler {
             String output;
 
             while ((output = reader.readLine()) != null) {
+                output = output.concat("\n");
                 builder.append(output);
             }
             reader.close();
             return builder.toString();
         } catch (FileNotFoundException e) {
-            return "ERROR -1 0 "+ "206 " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
+            return ERROR + " -1 0 "+ "206 " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         } catch (IOException e) {
-            return "ERROR -1 0 "+ "205 " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
+            return ERROR + " -1 0 "+ "205 " + e.getMessage().length() + "\r\n\r\n" + e.getMessage() + "\n";
         }
     }
 

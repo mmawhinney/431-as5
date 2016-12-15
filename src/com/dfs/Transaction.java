@@ -169,4 +169,12 @@ public class Transaction {
     public void setTime(long time) {
         this.time = time;
     }
+
+    public boolean transactionConplete() {
+        return status == Constants.TXN_STATE.COMPLETE;
+    }
+
+    public boolean transactionPartial() {
+        return status == Constants.TXN_STATE.PARTIAL;
+    }
 }
