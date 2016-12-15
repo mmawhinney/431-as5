@@ -111,37 +111,26 @@ public class ServerWorker implements Runnable {
 
         String commandType = messageParts[0].toUpperCase();
         System.out.println(commandType);
-        try {
-            if (commandType.contains(READ)) {
-                return "Read received";
-            } else if (commandType.contains(NEW_TXN)) {
-                TCPServer.incrementTransactionCount();
-                transaction = new Transaction(messageParts, TCPServer.getTransactionCount());
-                addToTransactionsMap(TCPServer.getTransactionCount(), transaction);
-                NewTxnHandler newTxn = new NewTxnHandler(messageParts, data, transaction);
-                newTxn.parseCommand();
-                newTxn.parseFileName();
-                return newTxn.getResponse();
-            } else if (commandType.contains(WRITE)) {
-                WriteHandler write = new WriteHandler(messageParts, data, transaction);
-                write.parseCommand();
-                write.handleData();
-                return write.getResponse();
-            } else if (commandType.contains(COMMIT)) {
-                CommitHandler commit = new CommitHandler(messageParts, transaction, directory);
-                commit.parseCommand();
-                commit.writeToDisk();
-                return commit.getResponse();
-            } else if (commandType.contains(ABORT)) {
-                AbortHandler abort = new AbortHandler(messageParts, transaction);
-                abort.parseCommand();
-                abort.abortTransaction(transactions, directory);
-                return abort.getResponse();
-            } else {
-                return "unknown command received";
-            }
-        } catch (DfsServerException e) {
-            return e.getLocalizedMessage();
+
+        if (commandType.contains(READ)) {
+            return "Read received";
+        } else if (commandType.contains(NEW_TXN)) {
+            TCPServer.incrementTransactionCount();
+            transaction = new Transaction(messageParts, TCPServer.getTransactionCount());
+            addToTransactionsMap(TCPServer.getTransactionCount(), transaction);
+            NewTxnHandler newTxn = new NewTxnHandler(messageParts, data, transaction);
+            return newTxn.handleCommand();
+        } else if (commandType.contains(WRITE)) {
+            WriteHandler write = new WriteHandler(messageParts, data, transaction);
+            return write.handleCommand();
+        } else if (commandType.contains(COMMIT)) {
+            CommitHandler commit = new CommitHandler(messageParts, transaction, directory);
+            return commit.handleCommand();
+        } else if (commandType.contains(ABORT)) {
+            AbortHandler abort = new AbortHandler(messageParts, transaction, transactions, directory);
+            return abort.handleCommand();
+        } else {
+            return "unknown command received";
         }
     }
 }

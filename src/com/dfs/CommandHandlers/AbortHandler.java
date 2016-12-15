@@ -15,25 +15,40 @@ public class AbortHandler implements CommandHandler {
 
     private String[] command;
     private Transaction transaction;
+    private int seqNumber;
+    private String directory;
+    private Map<Integer, Transaction> transactions;
 
-    public AbortHandler(String[] command, Transaction transaction) {
+    public AbortHandler(String[] command, Transaction transaction, Map<Integer, Transaction> transactions, String directory) {
         this.command = command;
         this.transaction = transaction;
+        this.transactions = transactions;
+        this.directory = directory;
     }
 
     public String getResponse() {
         return  "ACK " + transactionId + "\n";
     }
 
+    public String handleCommand() {
+        try {
+            parseCommand();
+            abortTransaction();
+            return "ACK " + transactionId + "\n";
+        } catch (DfsServerException e) {
+            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + " " + e.getMessage().length() + "\n";
+        }
+    }
+
     public void parseCommand() throws DfsServerException {
         if(command.length < MESSAGE_PARTS) {
-            throw new DfsServerException(ERROR_204);
+            throw new DfsServerException(204, ERROR_204);
         }
-
+        seqNumber = Integer.parseInt(command[2]);
         transactionId = Integer.parseInt(command[1]);
     }
 
-    public void abortTransaction(Map<Integer, Transaction> transactions, String directory) {
+    public void abortTransaction() {
         transactions.remove(transactionId, transaction);
         String filePath = directory + transaction.getFileName();
         File file = new File(filePath);

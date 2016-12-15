@@ -4,12 +4,8 @@ import com.dfs.DfsServerException;
 import com.dfs.Transaction;
 
 import java.io.*;
-import java.nio.Buffer;
-import java.util.ArrayList;
 import java.util.Arrays;
 
-import static com.dfs.Constants.ERROR_204;
-import static com.dfs.Constants.MESSAGE_PARTS;
 
 public class WriteHandler implements CommandHandler {
 
@@ -22,37 +18,35 @@ public class WriteHandler implements CommandHandler {
 
     private Transaction transaction;
 
-
-//    public WriteHandler(String command, BufferedReader reader, BufferedInputStream in) {
-//        this.command = command;
-//        this.reader = reader;
-//        this.in = in;
-//        fileData = new byte[1024];
-//    }
-
     public WriteHandler(String[] command, byte[] data, Transaction transaction) {
         this.command = command;
         this.data = data;
         this.transaction = transaction;
     }
 
-
-    public String getResponse() {
-        return "\n";
+    public String handleCommand() {
+        try {
+            parseCommand();
+            handleData();
+            return "\n";
+        } catch (DfsServerException e) {
+            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + " " + e.getMessage().length() + "\n";
+        }
     }
 
-    public void parseCommand() throws DfsServerException {
+    private void parseCommand() throws DfsServerException {
         transactionId = Integer.parseInt(command[1]);
         seqNumber = Integer.parseInt(command[2]);
         contentLength = Integer.parseInt(command[3]);
     }
 
-    public void handleData() {
+    private void handleData() {
+        // after we parsed the command, we get left with "\n\r\n" in the data array
+        // This will get rid of those extra characters
+        // it also trims the data array so it cuts off at contentLength
         byte[] fileData = Arrays.copyOfRange(data, 3, contentLength + 3);
         writeData(fileData);
-        for(byte b : fileData) {
-            System.out.println((char)b);
-        }
+        transaction.incrementSeqNumber();
     }
 
     private void writeData(byte[] fileData) {
@@ -63,24 +57,4 @@ public class WriteHandler implements CommandHandler {
         }
 
     }
-
-
-//    public void parseData() throws IOException {
-//        reader.readLine(); // consume new line in header
-//        byte[] b = new byte[1024];
-//        int bytesRead = in.read(b, 0, 1024);
-//        System.out.println("bytes read = " + bytesRead);
-//        while(bytesRead > 0) {
-//            bytesRead = in.read(fileData, 0, 1024);
-//            System.out.println("bytes read = " + bytesRead);
-//        }
-//        System.out.println(new String(fileData));
-//        String data = reader.readLine();
-//        while(data != null) {
-//            fileData.add(data);
-//            System.out.println(data);
-//            data = reader.readLine();
-//
-//        }
-//    }
 }

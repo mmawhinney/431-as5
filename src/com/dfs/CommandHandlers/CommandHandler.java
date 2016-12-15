@@ -4,7 +4,6 @@ import com.dfs.DfsServerException;
 
 public interface CommandHandler {
 
-    String getResponse();
-    void parseCommand() throws DfsServerException;
+    String handleCommand() throws DfsServerException;
 
 }

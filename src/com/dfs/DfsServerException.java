@@ -5,6 +5,8 @@ package com.dfs;
  */
 public class DfsServerException extends Exception {
 
+    private int errorCode;
+
     public DfsServerException() {
         super();
     }
@@ -21,4 +23,12 @@ public class DfsServerException extends Exception {
         super(message, throwable);
     }
 
+    public DfsServerException(int errorCode, String message) {
+        super(message);
+        this.errorCode = errorCode;
+    }
+
+    public int getErrorCode() {
+        return errorCode;
+    }
 }

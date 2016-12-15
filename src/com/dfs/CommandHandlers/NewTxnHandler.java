@@ -27,11 +27,17 @@ public class NewTxnHandler implements CommandHandler {
         return transactionId;
     }
 
-    public String getResponse() {
-        return  "ACK " + transactionId + " " + seqNumber + "\n";
+    public String handleCommand() {
+        try {
+            parseCommand();
+            parseFileName();
+            return "ACK " + transactionId + " " + seqNumber + "\n";
+        } catch (DfsServerException e) {
+            return "ERROR " + transactionId + " " + seqNumber + " " + e.getErrorCode() + " " + e.getMessage() + " " + e.getMessage().length() + "\n";
+        }
     }
 
-    public void parseCommand() throws DfsServerException {
+    private void parseCommand() throws DfsServerException {
         transactionId = transaction.getId();
         seqNumber = Integer.parseInt(command[2]);
         contentLength = Integer.parseInt(command[3]);
@@ -40,7 +46,7 @@ public class NewTxnHandler implements CommandHandler {
         }
     }
 
-    public void parseFileName() {
+    private void parseFileName() {
         byte[] filenameData = new byte[data.length];
         int j = 0;
         for (byte b : data) {
